@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/src/components/Button';
 import { Input } from '@/src/components/Input';
+import { LogoProEstoque } from '@/src/components/LogoProEstoque';
 import { ProEstoqueTheme } from '@/src/constants/theme';
 
 export default function RecuperarSenhaScreen() {
@@ -22,9 +23,7 @@ export default function RecuperarSenhaScreen() {
 
 				<View style={styles.card}>
 					<View style={styles.header}>
-						<View style={styles.logoBox}>
-							<Ionicons name="cube-outline" size={24} color={ProEstoqueTheme.colors.textInverse} />
-						</View>
+						<LogoProEstoque size="md" />
 						<Text style={styles.title}>Recuperar senha</Text>
 						<Text style={styles.subtitle}>Informe seu e-mail e enviaremos um link de recuperação</Text>
 					</View>
@@ -97,14 +96,6 @@ const styles = StyleSheet.create({
 	header: {
 		alignItems: 'center',
 		gap: ProEstoqueTheme.spacing.sm,
-	},
-	logoBox: {
-		width: 52,
-		height: 52,
-		borderRadius: ProEstoqueTheme.radius.md,
-		backgroundColor: ProEstoqueTheme.colors.brandPrimary,
-		alignItems: 'center',
-		justifyContent: 'center',
 	},
 	title: {
 		fontSize: ProEstoqueTheme.typography.h2,

@@ -1,18 +1,18 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Link, router } from 'expo-router';
 import { useState } from 'react';
 import {
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+	KeyboardAvoidingView,
+	Platform,
+	Pressable,
+	StyleSheet,
+	Text,
+	View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/src/components/Button';
 import { Input } from '@/src/components/Input';
+import { LogoProEstoque } from '@/src/components/LogoProEstoque';
 import { ProEstoqueTheme } from '@/src/constants/theme';
 
 export default function LoginScreen() {
@@ -26,9 +26,7 @@ export default function LoginScreen() {
 				behavior={Platform.select({ ios: 'padding', android: 'height' })}>
 				<View style={styles.card}>
 					<View style={styles.header}>
-						<View style={styles.logoBox}>
-							<Ionicons name="cube-outline" size={24} color={ProEstoqueTheme.colors.textInverse} />
-						</View>
+						<LogoProEstoque size="md" />
 						<Text style={styles.title}>ProEstoque</Text>
 						<Text style={styles.subtitle}>Bem-vindo de volta</Text>
 					</View>
@@ -95,20 +93,12 @@ const styles = StyleSheet.create({
 		borderRadius: ProEstoqueTheme.radius.lg,
 		padding: ProEstoqueTheme.spacing.xl,
 		gap: ProEstoqueTheme.spacing.lg,
-			boxShadow: '0px 12px 20px rgba(31, 41, 55, 0.08)',
+		boxShadow: '0px 12px 20px rgba(31, 41, 55, 0.08)',
 		elevation: 6,
 	},
 	header: {
 		alignItems: 'center',
 		gap: ProEstoqueTheme.spacing.sm,
-	},
-	logoBox: {
-		width: 52,
-		height: 52,
-		borderRadius: ProEstoqueTheme.radius.md,
-		backgroundColor: ProEstoqueTheme.colors.brandPrimary,
-		alignItems: 'center',
-		justifyContent: 'center',
 	},
 	title: {
 		fontSize: ProEstoqueTheme.typography.h2,
