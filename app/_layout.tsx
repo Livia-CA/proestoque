@@ -1,11 +1,10 @@
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Redirect, Stack, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, View } from 'react-native';
 import 'react-native-reanimated';
 
-import { ProEstoqueTheme } from '@/src/constants/theme';
 import { AuthProvider, useAuth } from '@/src/contexts/AuthContext';
+import { SplashScreen } from '@/src/components/SplashScreen';
 
 export const unstable_settings = {
   initialRouteName: '(auth)',
@@ -16,18 +15,7 @@ function NavigationGuard() {
   const segments = useSegments();
 
   if (isLoading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: ProEstoqueTheme.colors.background,
-        }}
-      >
-        <ActivityIndicator size="large" color={ProEstoqueTheme.colors.brandPrimary} />
-      </View>
-    );
+    return <SplashScreen />;
   }
 
   const estaNoGrupoAuth = segments[0] === '(auth)';

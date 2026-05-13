@@ -31,6 +31,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
+    const bootStartedAt = Date.now();
+    let isMounted = true;
+
     async function carregarSessao() {
       try {
         const [tokenSalvo, userString] = await AsyncStorage.multiGet([
@@ -48,11 +51,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (error) {
         console.warn('Erro ao carregar sessão:', error);
       } finally {
-        setIsLoading(false);
+        const elapsed = Date.now() - bootStartedAt;
+        const remaining = Math.max(1500 - elapsed, 0);
+
+        setTimeout(() => {
+          if (isMounted) {
+            setIsLoading(false);
+          }
+        }, remaining);
       }
     }
 
     carregarSessao();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const login = useCallback(async (email: string, senha: string) => {
