@@ -1,6 +1,7 @@
-import { Link, router } from 'expo-router';
+import { Link } from 'expo-router';
 import { useState } from 'react';
 import {
+	Alert,
 	KeyboardAvoidingView,
 	Platform,
 	Pressable,
@@ -14,10 +15,25 @@ import { Button } from '@/src/components/Button';
 import { Input } from '@/src/components/Input';
 import { LogoProEstoque } from '@/src/components/LogoProEstoque';
 import { ProEstoqueTheme } from '@/src/constants/theme';
+import { useAuth } from '@/src/contexts/AuthContext';
 
 export default function LoginScreen() {
+	const { login, isLoggingIn } = useAuth();
 	const [email, setEmail] = useState('');
 	const [senha, setSenha] = useState('');
+
+	const handleLogin = async () => {
+		if (!email.trim() || !senha.trim()) {
+			Alert.alert('Atenção', 'Preencha e-mail e senha.');
+			return;
+		}
+
+		try {
+			await login(email, senha);
+		} catch {
+			Alert.alert('Erro', 'Falha ao fazer login. Tente novamente.');
+		}
+	};
 
 	return (
 		<SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
@@ -61,7 +77,7 @@ export default function LoginScreen() {
 							</Pressable>
 						</Link>
 
-						<Button title="Entrar" fullWidth onPress={() => router.replace('/(tabs)')} />
+						<Button title="Entrar" fullWidth onPress={handleLogin} loading={isLoggingIn} />
 					</View>
 
 					<View style={styles.footer}>

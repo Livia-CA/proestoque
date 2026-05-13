@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useAuth } from '@/src/contexts/AuthContext';
 import { ProEstoqueTheme } from '@/src/constants/theme';
 import {
   formatarPreco,
@@ -66,7 +67,12 @@ const formatarDataHoje = (): string => {
 };
 
 export default function HomeScreen() {
+  const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
+
+  const hora = new Date().getHours();
+  const saudacao = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
+  const nomeUsuario = user?.nome?.split(' ')[0] ?? 'Usuário';
 
   const produtosComEstoqueBaixo = useMemo(() => getProdutosComEstoqueBaixo(), []);
   const valorTotalEstoque = useMemo(() => getValorTotalEstoque(), []);
@@ -162,7 +168,7 @@ export default function HomeScreen() {
             <View style={styles.topAccent} />
             <View style={styles.headerRow}>
               <View>
-                <Text style={styles.title}>Olá, João</Text>
+                <Text style={styles.title}>{saudacao}, {nomeUsuario} 👋</Text>
                 <Text style={styles.subtitle}>{formatarDataHoje()}</Text>
               </View>
 
