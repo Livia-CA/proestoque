@@ -11,8 +11,8 @@ import {
 } from 'react';
 
 import { PRODUTOS_MOCK } from '@/src/data/mockData';
-import type { Produto } from '@/src/types';
 import type { ProdutoFormData } from '@/src/schemas/produtoSchema';
+import type { Produto } from '@/src/types';
 
 type ProductsState = {
   produtos: Produto[];
@@ -35,6 +35,18 @@ type ProductsContextType = {
 };
 
 const STORAGE_KEY = '@proestoque:produtos';
+
+function normalizarProduto(produto: Produto): Produto {
+  return {
+    ...produto,
+    observacao: produto.observacao?.trim() || undefined,
+    foto: produto.foto?.trim() || undefined,
+  };
+}
+
+function normalizarProdutos(produtos: Produto[]): Produto[] {
+  return produtos.map(normalizarProduto);
+}
 
 function produtosReducer(state: ProductsState, action: ProductsAction): ProductsState {
   switch (action.type) {
@@ -79,9 +91,9 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       try {
         const json = await AsyncStorage.getItem(STORAGE_KEY);
         const produtosSalvos = json ? (JSON.parse(json) as Produto[]) : PRODUTOS_MOCK;
-        dispatch({ type: 'LOAD', payload: produtosSalvos });
+        dispatch({ type: 'LOAD', payload: normalizarProdutos(produtosSalvos) });
       } catch {
-        dispatch({ type: 'LOAD', payload: PRODUTOS_MOCK });
+        dispatch({ type: 'LOAD', payload: normalizarProdutos(PRODUTOS_MOCK) });
       }
     }
 
@@ -104,23 +116,23 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
   }, [state.isLoading, state.produtos]);
 
   const adicionarProduto = useCallback(async (data: ProdutoFormData) => {
-    const novoProduto: Produto = {
+    const novoProduto: Produto = normalizarProduto({
       ...data,
       id: `prod_${Date.now()}`,
       observacao: data.observacao?.trim() || undefined,
       ultimaMovimentacao: new Date().toISOString(),
-    };
+    } as Produto);
 
     dispatch({ type: 'ADD', payload: novoProduto });
   }, []);
 
   const editarProduto = useCallback(async (id: string, data: ProdutoFormData) => {
-    const produtoAtualizado: Produto = {
+    const produtoAtualizado: Produto = normalizarProduto({
       ...data,
       id,
       observacao: data.observacao?.trim() || undefined,
       ultimaMovimentacao: new Date().toISOString(),
-    };
+    } as Produto);
 
     dispatch({ type: 'UPDATE', payload: produtoAtualizado });
   }, []);

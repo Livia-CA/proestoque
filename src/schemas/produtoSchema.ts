@@ -37,6 +37,7 @@ export const produtoSchema = z.object({
     .refine((val) => typeof val === 'number', { message: 'Informe o preço' })
     .refine((val) => (val as number) > 0, { message: 'Preço deve ser maior que zero' }),
 
+  foto: z.string().optional(),
   unidade: z.enum(unidadesProduto),
   observacao: z.string().max(200, 'Máximo 200 caracteres').optional(),
 });

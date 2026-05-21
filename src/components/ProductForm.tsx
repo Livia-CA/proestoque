@@ -6,6 +6,7 @@ import { Controller, useForm, type Resolver } from 'react-hook-form';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { Button } from '@/src/components/Button';
+import { ImagePickerField } from '@/src/components/ImagePickerField';
 import { Input } from '@/src/components/Input';
 import { ProEstoqueTheme } from '@/src/constants/theme';
 import { useProducts } from '@/src/contexts/ProductsContext';
@@ -22,6 +23,7 @@ const defaultValues: any = {
   quantidade: undefined,
   quantidadeMinima: undefined,
   preco: undefined,
+  foto: undefined,
   unidade: 'un',
   observacao: '',
 };
@@ -57,6 +59,7 @@ export function ProductForm({ produtoId }: ProductFormProps) {
       quantidade: produtoAtual.quantidade,
       quantidadeMinima: produtoAtual.quantidadeMinima,
       preco: produtoAtual.preco,
+        foto: produtoAtual.foto ?? undefined,
       unidade: produtoAtual.unidade as ProdutoFormData['unidade'],
       observacao: produtoAtual.observacao ?? '',
     });
@@ -147,6 +150,17 @@ export function ProductForm({ produtoId }: ProductFormProps) {
           )}
         />
         {errors.categoriaId?.message ? <Text style={styles.errorText}>{errors.categoriaId.message}</Text> : null}
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>Foto do produto</Text>
+        <Controller
+          control={control}
+          name="foto"
+          render={({ field: { value, onChange } }) => (
+            <ImagePickerField value={value ?? null} onChange={(uri) => onChange(uri ?? undefined)} />
+          )}
+        />
       </View>
 
       <Controller

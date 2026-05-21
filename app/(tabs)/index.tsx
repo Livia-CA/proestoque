@@ -7,6 +7,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -135,9 +136,13 @@ export default function HomeScreen() {
 
     return (
       <View style={styles.produtoItem}>
-        <View style={styles.produtoIcone}>
-          <Ionicons name="cube-outline" size={18} color={ProEstoqueTheme.colors.brandPrimary} />
-        </View>
+        {item.foto ? (
+          <Image source={{ uri: item.foto }} style={styles.produtoThumbnail} />
+        ) : (
+          <View style={styles.produtoIcone}>
+            <Ionicons name="cube-outline" size={18} color={ProEstoqueTheme.colors.brandPrimary} />
+          </View>
+        )}
 
         <View style={styles.produtoInfo}>
           <Text style={styles.produtoNome}>{item.nome}</Text>
@@ -341,6 +346,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: ProEstoqueTheme.spacing.md,
+  },
+  produtoThumbnail: {
+    width: 40,
+    height: 40,
+    borderRadius: ProEstoqueTheme.radius.sm,
+    marginRight: ProEstoqueTheme.spacing.md,
+    backgroundColor: ProEstoqueTheme.colors.brandPrimarySoft,
   },
   produtoInfo: {
     flex: 1,

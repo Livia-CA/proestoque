@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/src/components/Button';
@@ -70,6 +70,14 @@ export default function ProdutosScreen() {
         activeOpacity={0.86}
         style={styles.card}
         onPress={() => router.push(`/produtos/${item.id}`)}>
+        {item.foto ? (
+          <Image source={{ uri: item.foto }} style={styles.thumbnail} />
+        ) : (
+          <View style={styles.thumbnailPlaceholder}>
+            <Ionicons name="cube-outline" size={22} color={ProEstoqueTheme.colors.textSecondary} />
+          </View>
+        )}
+
         <View style={styles.cardInfo}>
           <Text style={styles.nome}>{item.nome}</Text>
           <Text style={styles.subtitulo}>
@@ -197,6 +205,21 @@ const styles = StyleSheet.create({
     borderColor: ProEstoqueTheme.colors.borderDefault,
     backgroundColor: ProEstoqueTheme.colors.surface,
     marginBottom: ProEstoqueTheme.spacing.sm,
+    gap: ProEstoqueTheme.spacing.md,
+  },
+  thumbnail: {
+    width: 48,
+    height: 48,
+    borderRadius: ProEstoqueTheme.radius.md,
+    backgroundColor: ProEstoqueTheme.colors.brandPrimarySoft,
+  },
+  thumbnailPlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: ProEstoqueTheme.radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E5E7EB',
   },
   cardInfo: {
     flex: 1,

@@ -28,6 +28,13 @@
     "plugins": [
       "expo-router",
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permitir acesso à galeria para adicionar fotos aos produtos.",
+          "cameraPermission": "Permitir acesso à câmera para fotografar produtos."
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
