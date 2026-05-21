@@ -6,5 +6,6 @@ export type Produto = {
   quantidadeMinima: number;
   preco: number;
   unidade: string;
+  observacao?: string;
   ultimaMovimentacao: string;
 };

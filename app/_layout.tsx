@@ -3,8 +3,9 @@ import { Redirect, Stack, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
-import { AuthProvider, useAuth } from '@/src/contexts/AuthContext';
 import { SplashScreen } from '@/src/components/SplashScreen';
+import { AuthProvider, useAuth } from '@/src/contexts/AuthContext';
+import { ProductsProvider } from '@/src/contexts/ProductsContext';
 
 export const unstable_settings = {
   initialRouteName: '(auth)',
@@ -50,10 +51,12 @@ function AppShell() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <ThemeProvider value={DefaultTheme}>
-        <AppShell />
-        <StatusBar style="dark" />
-      </ThemeProvider>
+      <ProductsProvider>
+        <ThemeProvider value={DefaultTheme}>
+          <AppShell />
+          <StatusBar style="dark" />
+        </ThemeProvider>
+      </ProductsProvider>
     </AuthProvider>
   );
 }

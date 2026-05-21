@@ -10,15 +10,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useAuth } from '@/src/contexts/AuthContext';
 import { ProEstoqueTheme } from '@/src/constants/theme';
-import {
-  formatarPreco,
-  getProdutosComEstoqueBaixo,
-  getValorTotalEstoque,
-  PRODUTOS_MOCK,
-} from '@/src/data/mockData';
+import { useAuth } from '@/src/contexts/AuthContext';
+import { useProducts } from '@/src/contexts/ProductsContext';
+import { formatarPreco } from '@/src/data/mockData';
 import type { Produto } from '@/src/types';
+import { router } from 'expo-router';
 
 type StatusProduto = 'normal' | 'baixo' | 'sem-estoque';
 type CardIconName = ComponentProps<typeof Ionicons>['name'];
@@ -68,24 +65,31 @@ const formatarDataHoje = (): string => {
 
 export default function HomeScreen() {
   const { user } = useAuth();
+  const { produtos } = useProducts();
   const [refreshing, setRefreshing] = useState(false);
 
   const hora = new Date().getHours();
   const saudacao = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
   const nomeUsuario = user?.nome?.split(' ')[0] ?? 'Usuário';
 
-  const produtosComEstoqueBaixo = useMemo(() => getProdutosComEstoqueBaixo(), []);
-  const valorTotalEstoque = useMemo(() => getValorTotalEstoque(), []);
+  const produtosComEstoqueBaixo = useMemo(
+    () => produtos.filter((produto) => produto.quantidade < produto.quantidadeMinima),
+    [produtos],
+  );
+  const valorTotalEstoque = useMemo(
+    () => produtos.reduce((acc, produto) => acc + produto.quantidade * produto.preco, 0),
+    [produtos],
+  );
   const produtosRecentes = useMemo(
     () =>
-      [...PRODUTOS_MOCK]
+      [...produtos]
         .sort(
           (a, b) =>
             new Date(b.ultimaMovimentacao).getTime() -
             new Date(a.ultimaMovimentacao).getTime(),
         )
         .slice(0, 8),
-    [],
+    [produtos],
   );
 
   const cardsResumo = useMemo(
@@ -93,7 +97,7 @@ export default function HomeScreen() {
       {
         id: 'total',
         label: 'Produtos',
-        valor: String(PRODUTOS_MOCK.length),
+        valor: String(produtos.length),
         icon: 'cube-outline' as CardIconName,
       },
       {
@@ -115,7 +119,7 @@ export default function HomeScreen() {
         icon: 'cash-outline' as CardIconName,
       },
     ],
-    [produtosComEstoqueBaixo.length, valorTotalEstoque],
+    [produtos.length, produtosComEstoqueBaixo.length, valorTotalEstoque],
   );
 
   const onRefresh = () => {
@@ -172,7 +176,10 @@ export default function HomeScreen() {
                 <Text style={styles.subtitle}>{formatarDataHoje()}</Text>
               </View>
 
-              <TouchableOpacity style={styles.addButton} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={styles.addButton}
+                activeOpacity={0.8}
+                onPress={() => router.push('/produtos/novo' as never)}>
                 <Ionicons name="add" size={22} color={ProEstoqueTheme.colors.textInverse} />
               </TouchableOpacity>
             </View>
