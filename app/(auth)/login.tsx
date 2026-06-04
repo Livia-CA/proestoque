@@ -30,8 +30,9 @@ export default function LoginScreen() {
 
 		try {
 			await login(email, senha);
-		} catch {
-			Alert.alert('Erro', 'Falha ao fazer login. Tente novamente.');
+		} catch (error) {
+			const mensagem = error instanceof Error ? error.message : 'Falha ao fazer login. Tente novamente.';
+			Alert.alert('Erro', mensagem);
 		}
 	};
 

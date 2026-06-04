@@ -1,6 +1,7 @@
 import { Link, router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
+	Alert,
 	KeyboardAvoidingView,
 	Platform,
 	Pressable,
@@ -15,8 +16,10 @@ import { Button } from '@/src/components/Button';
 import { Input } from '@/src/components/Input';
 import { LogoProEstoque } from '@/src/components/LogoProEstoque';
 import { ProEstoqueTheme } from '@/src/constants/theme';
+import { useAuth } from '@/src/contexts/AuthContext';
 
 export default function CadastroScreen() {
+	const { registrar } = useAuth();
 	const [nome, setNome] = useState('');
 	const [email, setEmail] = useState('');
 	const [senha, setSenha] = useState('');
@@ -35,16 +38,40 @@ export default function CadastroScreen() {
 		return undefined;
 	}, [confirmarSenha, senha]);
 
-	const handleCriarConta = () => {
+	const handleCriarConta = async () => {
+		const nomeLimpo = nome.trim();
+		const emailLimpo = email.trim();
+
+		if (nomeLimpo.length < 2) {
+			Alert.alert('Atenção', 'Informe um nome com pelo menos 2 caracteres.');
+			return;
+		}
+
+		if (!emailLimpo.includes('@') || !emailLimpo.includes('.')) {
+			Alert.alert('Atenção', 'Informe um e-mail válido.');
+			return;
+		}
+
+		if (senha.length < 6) {
+			Alert.alert('Atenção', 'A senha deve ter pelo menos 6 caracteres.');
+			return;
+		}
+
 		if (senha !== confirmarSenha) {
+			Alert.alert('Atenção', 'As senhas não coincidem.');
 			return;
 		}
 
 		setLoading(true);
-		setTimeout(() => {
+		try {
+			await registrar(nomeLimpo, emailLimpo, senha);
+			router.replace('/(tabs)');
+		} catch (error) {
+			const mensagem = error instanceof Error ? error.message : 'Falha ao criar conta.';
+			Alert.alert('Erro', mensagem);
+		} finally {
 			setLoading(false);
-			router.replace('/(auth)/login');
-		}, 2000);
+		}
 	};
 
 	return (
