@@ -3,4 +3,8 @@ export type Categoria = {
   nome: string;
   icone: string;
   cor: string;
+  criadoEm?: string;
+  _count?: {
+    produtos: number;
+  };
 };

@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useMemo, useState, type ComponentProps } from 'react';
+import { useCallback, useMemo, useState, type ComponentProps } from 'react';
 import {
   FlatList,
   RefreshControl,
@@ -11,10 +11,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ErrorView } from '@/src/components/ErrorView';
+import { LoadingView } from '@/src/components/LoadingView';
 import { ProEstoqueTheme } from '@/src/constants/theme';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useProducts } from '@/src/contexts/ProductsContext';
-import { formatarPreco } from '@/src/data/mockData';
+import { formatarPreco } from '@/src/utils/formatters';
 import type { Produto } from '@/src/types';
 import { router } from 'expo-router';
 
@@ -66,7 +68,7 @@ const formatarDataHoje = (): string => {
 
 export default function HomeScreen() {
   const { user } = useAuth();
-  const { produtos } = useProducts();
+  const { produtos, isLoading, error, carregarProdutos } = useProducts();
   const [refreshing, setRefreshing] = useState(false);
 
   const hora = new Date().getHours();
@@ -110,7 +112,7 @@ export default function HomeScreen() {
       {
         id: 'categorias',
         label: 'Categorias',
-        valor: '5',
+        valor: String(new Set(produtos.map((produto) => produto.categoriaId)).size),
         icon: 'grid-outline' as CardIconName,
       },
       {
@@ -120,15 +122,14 @@ export default function HomeScreen() {
         icon: 'cash-outline' as CardIconName,
       },
     ],
-    [produtos.length, produtosComEstoqueBaixo.length, valorTotalEstoque],
+    [produtos, produtosComEstoqueBaixo.length, valorTotalEstoque],
   );
 
-  const onRefresh = () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 800);
-  };
+    await carregarProdutos();
+    setRefreshing(false);
+  }, [carregarProdutos]);
 
   const renderProduto = ({ item }: { item: Produto }) => {
     const status = getStatusProduto(item);
@@ -157,6 +158,14 @@ export default function HomeScreen() {
       </View>
     );
   };
+
+  if (isLoading && produtos.length === 0) {
+    return <LoadingView mensagem="Carregando dashboard..." />;
+  }
+
+  if (error && produtos.length === 0) {
+    return <ErrorView mensagem={error} onRetry={carregarProdutos} />;
+  }
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>

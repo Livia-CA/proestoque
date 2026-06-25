@@ -1,20 +1,17 @@
-import axios from 'axios';
-import { Platform } from 'react-native';
+import { create, isAxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 
 const STORAGE_KEYS = {
 	TOKEN: '@proestoque:token',
+	USER: '@proestoque:user',
 } as const;
 
-const DEFAULT_BASE_URL = Platform.select({
-	android: 'http://10.0.2.2:3333/api',
-	ios: 'http://192.168.88.173:3333/api',
-	default: 'http://localhost:3333/api',
-});
+const DEFAULT_BASE_URL = 'http://localhost:3333/api';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? DEFAULT_BASE_URL;
+const BASE_URL = (Constants.expoConfig?.extra?.apiUrl as string | undefined) ?? DEFAULT_BASE_URL;
 
-export const api = axios.create({
+export const api = create({
 	baseURL: BASE_URL,
 	timeout: 10000,
 	headers: {
@@ -35,9 +32,31 @@ api.interceptors.request.use(async (config) => {
 
 api.interceptors.response.use(
 	(response) => response,
-	(error) => {
-		if (error.response?.status === 401) {
-			// A sessão pode ter expirado; o contexto decide como reagir.
+	async (error) => {
+		if (isAxiosError(error)) {
+			if (error.response?.status === 401) {
+				await AsyncStorage.multiRemove([STORAGE_KEYS.TOKEN, STORAGE_KEYS.USER]);
+			}
+
+			const data = error.response?.data as
+				| { erro?: string; message?: string; detalhes?: { campo?: string; mensagem?: string }[] }
+				| undefined;
+
+			if (error.response?.status === 422 && data?.detalhes?.length) {
+				const detalhes = data.detalhes
+					.filter((item) => item.campo && item.mensagem)
+					.map((item) => `${item.campo}: ${item.mensagem}`)
+					.join('\n');
+
+				return Promise.reject(new Error(detalhes ? `Dados inválidos:\n${detalhes}` : data.erro ?? 'Dados inválidos'));
+			}
+
+			const mensagem =
+				data?.erro ??
+				data?.message ??
+				(error.code === 'ECONNABORTED' ? 'Tempo de conexão esgotado' : 'Erro de conexão');
+
+			return Promise.reject(new Error(mensagem));
 		}
 
 		return Promise.reject(error);

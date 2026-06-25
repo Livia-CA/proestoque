@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import { isAxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { api } from '@/src/services/api';
@@ -45,9 +45,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const obterMensagemErro = useCallback((error: unknown, fallback: string) => {
-    if (axios.isAxiosError(error)) {
+    if (isAxiosError(error)) {
       const data = error.response?.data as
-        | { erro?: string; detalhes?: Array<{ campo?: string; mensagem?: string }> }
+        | { erro?: string; detalhes?: { campo?: string; mensagem?: string }[] }
         | undefined;
 
       if (error.response?.status === 422 && data?.detalhes?.length) {
@@ -137,7 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       throw new Error(obterMensagemErro(error, 'Falha ao criar conta'));
     }
-  }, [salvarSessao]);
+  }, [obterMensagemErro, salvarSessao]);
 
   const logout = useCallback(async () => {
     await AsyncStorage.multiRemove([STORAGE_KEYS.TOKEN, STORAGE_KEYS.USER]);

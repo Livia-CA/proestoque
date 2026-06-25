@@ -1,14 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
+import { FlatList, Image, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/src/components/Button';
+import { ErrorView } from '@/src/components/ErrorView';
 import { Input } from '@/src/components/Input';
+import { LoadingView } from '@/src/components/LoadingView';
 import { Colors, ProEstoqueTheme } from '@/src/constants/theme';
 import { useProducts } from '@/src/contexts/ProductsContext';
-import { CATEGORIAS_MOCK } from '@/src/data/mockData';
+import { useCategorias } from '@/src/hooks/useCategorias';
 import type { Produto } from '@/src/types';
 
 type StatusProduto = 'normal' | 'baixo' | 'sem-estoque';
@@ -44,9 +46,11 @@ const STATUS_STYLE: Record<StatusProduto, { label: string; backgroundColor: stri
 };
 
 export default function ProdutosScreen() {
-  const { produtos } = useProducts();
+  const { produtos, isLoading, error, carregarProdutos } = useProducts();
+  const { categorias } = useCategorias();
   const [busca, setBusca] = useState('');
   const [categoriaAtiva, setCategoriaAtiva] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const produtosFiltrados = useMemo(() => {
     const termo = busca.trim().toLowerCase();
@@ -60,6 +64,12 @@ export default function ProdutosScreen() {
       })
       .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
   }, [busca, categoriaAtiva, produtos]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await carregarProdutos();
+    setRefreshing(false);
+  }, [carregarProdutos]);
 
   const renderItem = ({ item }: { item: Produto }) => {
     const status = getStatusProduto(item);
@@ -92,6 +102,14 @@ export default function ProdutosScreen() {
     );
   };
 
+  if (isLoading && produtos.length === 0) {
+    return <LoadingView mensagem="Buscando produtos..." />;
+  }
+
+  if (error && produtos.length === 0) {
+    return <ErrorView mensagem={error} onRetry={carregarProdutos} />;
+  }
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
       <FlatList
@@ -99,6 +117,13 @@ export default function ProdutosScreen() {
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={ProEstoqueTheme.colors.brandPrimary}
+          />
+        }
         ListHeaderComponent={
           <View style={styles.header}>
             <Input
@@ -120,7 +145,7 @@ export default function ProdutosScreen() {
                 </Text>
               </TouchableOpacity>
 
-              {CATEGORIAS_MOCK.map((categoria) => {
+              {categorias.map((categoria) => {
                 const isActive = categoriaAtiva === categoria.id;
 
                 return (

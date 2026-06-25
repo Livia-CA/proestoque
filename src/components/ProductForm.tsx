@@ -10,7 +10,7 @@ import { ImagePickerField } from '@/src/components/ImagePickerField';
 import { Input } from '@/src/components/Input';
 import { ProEstoqueTheme } from '@/src/constants/theme';
 import { useProducts } from '@/src/contexts/ProductsContext';
-import { CATEGORIAS_MOCK } from '@/src/data/mockData';
+import { useCategorias } from '@/src/hooks/useCategorias';
 import { produtoSchema, unidadesProduto, type ProdutoFormData } from '@/src/schemas/produtoSchema';
 
 type ProductFormProps = {
@@ -31,6 +31,7 @@ const defaultValues: any = {
 export function ProductForm({ produtoId }: ProductFormProps) {
   const modoEdicao = Boolean(produtoId);
   const { adicionarProduto, editarProduto, deletarProduto, getProdutoById, isLoading } = useProducts();
+  const { categorias, isLoading: isLoadingCategorias, error: categoriasError, carregarCategorias } = useCategorias();
 
   const {
     control,
@@ -66,13 +67,18 @@ export function ProductForm({ produtoId }: ProductFormProps) {
   }, [modoEdicao, produtoAtual, reset]);
 
   const onSubmit = async (data: ProdutoFormData) => {
-    if (modoEdicao && produtoId) {
-      await editarProduto(produtoId, data);
-    } else {
-      await adicionarProduto(data);
-    }
+    try {
+      if (modoEdicao && produtoId) {
+        await editarProduto(produtoId, data);
+      } else {
+        await adicionarProduto(data);
+      }
 
-    router.back();
+      router.back();
+    } catch (error) {
+      const mensagem = error instanceof Error ? error.message : 'Não foi possível salvar o produto.';
+      Alert.alert('Erro ao salvar', mensagem);
+    }
   };
 
   const confirmarExclusao = () => {
@@ -86,8 +92,13 @@ export function ProductForm({ produtoId }: ProductFormProps) {
         text: 'Excluir',
         style: 'destructive',
         onPress: async () => {
-          await deletarProduto(produtoId);
-          router.back();
+          try {
+            await deletarProduto(produtoId);
+            router.back();
+          } catch (error) {
+            const mensagem = error instanceof Error ? error.message : 'Não foi possível excluir o produto.';
+            Alert.alert('Erro ao excluir', mensagem);
+          }
         },
       },
     ]);
@@ -131,7 +142,7 @@ export function ProductForm({ produtoId }: ProductFormProps) {
           name="categoriaId"
           render={({ field: { value, onChange } }) => (
             <View style={styles.chipsWrap}>
-              {CATEGORIAS_MOCK.map((categoria) => {
+              {categorias.map((categoria) => {
                 const isActive = value === categoria.id;
 
                 return (
@@ -149,6 +160,12 @@ export function ProductForm({ produtoId }: ProductFormProps) {
             </View>
           )}
         />
+        {isLoadingCategorias ? <Text style={styles.helperText}>Carregando categorias...</Text> : null}
+        {categoriasError ? (
+          <TouchableOpacity activeOpacity={0.85} onPress={carregarCategorias}>
+            <Text style={styles.errorText}>{categoriasError}. Toque para tentar novamente.</Text>
+          </TouchableOpacity>
+        ) : null}
         {errors.categoriaId?.message ? <Text style={styles.errorText}>{errors.categoriaId.message}</Text> : null}
       </View>
 
@@ -320,6 +337,11 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: ProEstoqueTheme.colors.danger,
+    fontSize: ProEstoqueTheme.typography.caption,
+    fontWeight: '600',
+  },
+  helperText: {
+    color: ProEstoqueTheme.colors.textSecondary,
     fontSize: ProEstoqueTheme.typography.caption,
     fontWeight: '600',
   },
